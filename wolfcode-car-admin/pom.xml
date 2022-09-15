@@ -36,7 +36,6 @@
             <artifactId>swagger-models</artifactId>
             <version>1.6.2</version>
         </dependency>
-
          <!-- Mysql驱动包 -->
         <dependency>
             <groupId>mysql</groupId>

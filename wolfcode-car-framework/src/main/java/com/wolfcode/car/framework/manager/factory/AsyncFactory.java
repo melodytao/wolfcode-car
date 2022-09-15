@@ -2,6 +2,7 @@ package com.wolfcode.car.framework.manager.factory;
 
 import java.util.TimerTask;
 
+import com.sun.xml.internal.bind.v2.TODO;
 import com.wolfcode.car.common.utils.ip.AddressUtils;
 import com.wolfcode.car.common.utils.ip.IpUtils;
 import com.wolfcode.car.system.domain.SysLogininfor;
@@ -81,23 +82,23 @@ public class AsyncFactory
         };
     }
 
+
     /**
      * 操作日志记录
-     * 
      * @param operLog 操作日志信息
-     * @return 任务task
+     * @return
      */
-    public static TimerTask recordOper(final SysOperLog operLog)
-    {
-        return new TimerTask()
-        {
+    public static TimerTask recordOper(SysOperLog operLog) {
+
+        return new TimerTask() {
             @Override
-            public void run()
-            {
+            public void run() {
                 // 远程查询操作地点
                 operLog.setOperLocation(AddressUtils.getRealAddressByIP(operLog.getOperIp()));
-                SpringUtils.getBean(ISysOperLogService.class).insertOperlog(operLog);
+                // 保存到数据库
+                SpringUtils.getBean(ISysOperLogService.class).insertOperLog(operLog);
             }
         };
+
     }
 }

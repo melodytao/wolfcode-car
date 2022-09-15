@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.wolfcode.car.common.core.domain.model.LoginUser;
 import com.wolfcode.car.common.core.redis.RedisCache;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -28,6 +29,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
  * @author ruoyi
  */
 @Component
+@Slf4j
 public class TokenService
 {
     // 令牌自定义标识
@@ -62,6 +64,7 @@ public class TokenService
         String token = getToken(request);
         if (StringUtils.isNotEmpty(token))
         {
+            log.debug(token);
             try
             {
                 Claims claims = parseToken(token);
