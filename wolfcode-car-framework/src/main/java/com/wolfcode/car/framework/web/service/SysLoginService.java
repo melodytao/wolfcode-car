@@ -81,16 +81,16 @@ public class SysLoginService
         {
             if (e instanceof BadCredentialsException)
             {
-                AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, MessageUtils.message("user.password.not.match")));
+                //TODO: 记录用户登录失败，密码不匹配日志
                 throw new UserPasswordNotMatchException();
             }
             else
             {
-                AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, e.getMessage()));
+                //TODO: 记录用户登录失败日志
                 throw new ServiceException(e.getMessage());
             }
         }
-        AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_SUCCESS, MessageUtils.message("user.login.success")));
+        //TODO: 记录用户登录成功日志
         LoginUser loginUser = (LoginUser) authentication.getPrincipal();
         recordLoginInfo(loginUser.getUserId());
         // 生成token
@@ -112,12 +112,12 @@ public class SysLoginService
         redisCache.deleteObject(verifyKey);
         if (captcha == null)
         {
-            AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, MessageUtils.message("user.jcaptcha.expire")));
+            //TODO: 记录用户登录失败，验证码过期
             throw new CaptchaExpireException();
         }
         if (!code.equalsIgnoreCase(captcha))
         {
-            AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, MessageUtils.message("user.jcaptcha.error")));
+            //TODO: 记录用户登录失败，验证码错误
             throw new CaptchaException();
         }
     }

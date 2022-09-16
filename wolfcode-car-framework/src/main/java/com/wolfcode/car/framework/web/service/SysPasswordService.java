@@ -61,16 +61,14 @@ public class SysPasswordService
 
         if (retryCount >= Integer.valueOf(maxRetryCount).intValue())
         {
-            AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL,
-                    MessageUtils.message("user.password.retry.limit.exceed", maxRetryCount, lockTime)));
+            //TODO: 记录用户登录失败，重试超限
             throw new UserPasswordRetryLimitExceedException(maxRetryCount, lockTime);
         }
 
         if (!matches(user, password))
         {
             retryCount = retryCount + 1;
-            AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL,
-                    MessageUtils.message("user.password.retry.limit.count", retryCount)));
+            //TODO: 记录用户登录失败，记录重试次数
             redisCache.setCacheObject(getCacheKey(username), retryCount, lockTime, TimeUnit.MINUTES);
             throw new UserPasswordNotMatchException();
         }
