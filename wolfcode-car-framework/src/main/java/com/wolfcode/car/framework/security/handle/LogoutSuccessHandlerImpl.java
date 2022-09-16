@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.wolfcode.car.common.core.domain.AjaxResult;
 import com.wolfcode.car.common.core.domain.model.LoginUser;
+import com.wolfcode.car.common.utils.MessageUtils;
 import com.wolfcode.car.framework.manager.AsyncManager;
 import com.wolfcode.car.framework.web.service.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,8 +47,7 @@ public class LogoutSuccessHandlerImpl implements LogoutSuccessHandler
             String userName = loginUser.getUsername();
             // 删除用户缓存记录
             tokenService.delLoginUser(loginUser.getToken());
-            //TODO: 记录用户退出日志
-
+            AsyncManager.me().execute(AsyncFactory.recordLogininfor(userName,Constants.LOGOUT, MessageUtils.message("user.logout.success")));
         }
         ServletUtils.renderString(response, JSON.toJSONString(AjaxResult.error(HttpStatus.SUCCESS, "退出成功")));
     }

@@ -30,12 +30,11 @@ import com.wolfcode.car.framework.security.context.AuthenticationContextHolder;
 
 /**
  * 登录校验方法
- * 
+ *
  * @author ruoyi
  */
 @Component
-public class SysLoginService
-{
+public class SysLoginService {
     @Autowired
     private TokenService tokenService;
 
@@ -44,7 +43,7 @@ public class SysLoginService
 
     @Autowired
     private RedisCache redisCache;
-    
+
     @Autowired
     private ISysUserService userService;
 
@@ -53,44 +52,36 @@ public class SysLoginService
 
     /**
      * 登录验证
-     * 
+     *
      * @param username 用户名
      * @param password 密码
-     * @param code 验证码
-     * @param uuid 唯一标识
+     * @param code     验证码
+     * @param uuid     唯一标识
      * @return 结果
      */
-    public String login(String username, String password, String code, String uuid)
-    {
+    public String login(String username, String password, String code, String uuid) {
         boolean captchaEnabled = configService.selectCaptchaEnabled();
         // 验证码开关
-        if (captchaEnabled)
-        {
+        if (captchaEnabled) {
             validateCaptcha(username, code, uuid);
         }
         // 用户验证
         Authentication authentication = null;
-        try
-        {
+        try {
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
             AuthenticationContextHolder.setContext(authenticationToken);
             // 该方法会去调用UserDetailsServiceImpl.loadUserByUsername
             authentication = authenticationManager.authenticate(authenticationToken);
-        }
-        catch (Exception e)
-        {
-            if (e instanceof BadCredentialsException)
-            {
-                //TODO: 记录用户登录失败，密码不匹配日志
+        } catch (Exception e) {
+            if (e instanceof BadCredentialsException) {
+                AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, MessageUtils.message("user.password.not.match")));
                 throw new UserPasswordNotMatchException();
-            }
-            else
-            {
-                //TODO: 记录用户登录失败日志
+            } else {
+                AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, e.getMessage()));
                 throw new ServiceException(e.getMessage());
             }
         }
-        //TODO: 记录用户登录成功日志
+        AsyncManager.me().execute(AsyncFactory.recordLogininfor(username,Constants.LOGIN_SUCCESS,MessageUtils.message("user.login.success")));
         LoginUser loginUser = (LoginUser) authentication.getPrincipal();
         recordLoginInfo(loginUser.getUserId());
         // 生成token
@@ -99,25 +90,22 @@ public class SysLoginService
 
     /**
      * 校验验证码
-     * 
+     *
      * @param username 用户名
-     * @param code 验证码
-     * @param uuid 唯一标识
+     * @param code     验证码
+     * @param uuid     唯一标识
      * @return 结果
      */
-    public void validateCaptcha(String username, String code, String uuid)
-    {
+    public void validateCaptcha(String username, String code, String uuid) {
         String verifyKey = CacheConstants.CAPTCHA_CODE_KEY + StringUtils.nvl(uuid, "");
         String captcha = redisCache.getCacheObject(verifyKey);
         redisCache.deleteObject(verifyKey);
-        if (captcha == null)
-        {
-            //TODO: 记录用户登录失败，验证码过期
+        if (captcha == null) {
+            AsyncManager.me().execute(AsyncFactory.recordLogininfor(username,Constants.LOGIN_SUCCESS,MessageUtils.message("user.jcaptcha.expire")));
             throw new CaptchaExpireException();
         }
-        if (!code.equalsIgnoreCase(captcha))
-        {
-            //TODO: 记录用户登录失败，验证码错误
+        if (!code.equalsIgnoreCase(captcha)) {
+            AsyncManager.me().execute(AsyncFactory.recordLogininfor(username,Constants.LOGIN_SUCCESS,MessageUtils.message("user.jcaptcha.error")));
             throw new CaptchaException();
         }
     }
@@ -127,8 +115,7 @@ public class SysLoginService
      *
      * @param userId 用户ID
      */
-    public void recordLoginInfo(Long userId)
-    {
+    public void recordLoginInfo(Long userId) {
         SysUser sysUser = new SysUser();
         sysUser.setUserId(userId);
         sysUser.setLoginIp(IpUtils.getIpAddr(ServletUtils.getRequest()));
