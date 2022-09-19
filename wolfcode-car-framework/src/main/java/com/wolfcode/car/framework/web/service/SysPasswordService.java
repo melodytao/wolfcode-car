@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 import com.wolfcode.car.common.core.domain.entity.SysUser;
 import com.wolfcode.car.common.core.redis.RedisCache;
 import com.wolfcode.car.framework.manager.AsyncManager;
+import com.wolfcode.car.framework.manager.factory.AsyncFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
