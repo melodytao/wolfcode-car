@@ -60,6 +60,12 @@
             <artifactId>wolfcode-generator</artifactId>
         </dependency>
 
+        <!--car=appointment-->
+        <dependency>
+            <groupId>com.wolfcode</groupId>
+            <artifactId>wolfcode-car-appointment</artifactId>
+            <version>3.8.3</version>
+        </dependency>
     </dependencies>
 
     <build>

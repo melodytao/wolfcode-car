@@ -81,3 +81,27 @@ export function isArray(arg) {
   }
   return Array.isArray(arg)
 }
+/**
+ * 验证手机号码规则
+ * @param {*} rule 当前规则
+ * @param {String} value 需要校验的值
+ * @param {Function} callback 回调函数
+ */
+ export function validatePhone(rule, value, callback){
+  var customerPhone = /^[1][3-8]+\d{9}$/;
+  var res = customerPhone.test(value)
+  if(!res) callback(new Error('手机号码不符合规则!'));  
+  callback();
+}
+/**
+ * 验证车牌号码规则
+ * @param {*} rule 当前规则
+ * @param {String} value 需要校验的值
+ * @param {Function} callback 回调函数 
+ */
+export function validateLicensePlate(rule, value, callback){
+  var cPattern = /^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领A-Z]{1}[A-Z]{1}[A-Z0-9]{4}[A-Z0-9挂学警港澳]{1}$/;
+  var res = cPattern.test(value)
+  if(!res) callback(new Error('车牌号码不符合规则!'));
+  callback();
+}

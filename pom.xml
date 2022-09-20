@@ -195,6 +195,7 @@
         <module>wolfcode-quartz</module>
         <module>wolfcode-generator</module>
         <module>wolfcode-car-common</module>
+        <module>wolfcode-car-appointment</module>
     </modules>
     <packaging>pom</packaging>
 
