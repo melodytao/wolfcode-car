@@ -196,6 +196,7 @@
         <module>wolfcode-generator</module>
         <module>wolfcode-car-common</module>
         <module>wolfcode-car-appointment</module>
+        <module>wolfcode-car-front</module>
     </modules>
     <packaging>pom</packaging>
 

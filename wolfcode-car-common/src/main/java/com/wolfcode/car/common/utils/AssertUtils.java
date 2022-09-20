@@ -39,4 +39,14 @@ public class AssertUtils {
             throw new BusinessException("不能预约当日之前时间");
         }
     }
+
+    /**
+     * 校验手机号码
+     * @param phone
+     */
+    public static void checkPhone(String phone){
+        if(!PhoneUtil.isMobileNumber(phone)){
+            throw new BusinessException("不是合法的手机号");
+        }
+    }
 }

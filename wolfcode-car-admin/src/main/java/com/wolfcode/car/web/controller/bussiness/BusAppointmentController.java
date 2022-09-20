@@ -2,6 +2,11 @@ package com.wolfcode.car.web.controller.bussiness;
 
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
+
+import com.wolfcode.car.appointment.domain.vo.ReservationVo;
+import com.wolfcode.car.common.annotation.Anonymous;
+import com.wolfcode.car.common.core.service.SmsService;
+import com.wolfcode.car.common.utils.AssertUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,24 +28,25 @@ import com.wolfcode.car.common.core.page.TableDataInfo;
 
 /**
  * 养修信息预约Controller
- * 
+ *
  * @author wolfcode
  * @date 2022-09-19
  */
 @RestController
 @RequestMapping("/business/appointment")
-public class BusAppointmentController extends BaseController
-{
+public class BusAppointmentController extends BaseController {
     @Autowired
     private IBusAppointmentService busAppointmentService;
+
+    @Autowired
+    private SmsService smsService;
 
     /**
      * 查询养修信息预约列表
      */
     @PreAuthorize("@ss.hasPermi('bussiness:appointment:list')")
     @GetMapping("/list")
-    public TableDataInfo list(BusAppointment busAppointment)
-    {
+    public TableDataInfo list(BusAppointment busAppointment) {
         startPage();
         List<BusAppointment> list = busAppointmentService.selectBusAppointmentList(busAppointment);
         return getDataTable(list);
@@ -52,8 +58,7 @@ public class BusAppointmentController extends BaseController
     @PreAuthorize("@ss.hasPermi('bussiness:appointment:add')")
     @Log(title = "养修信息预约", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult add(@RequestBody BusAppointment busAppointment)
-    {
+    public AjaxResult add(@RequestBody BusAppointment busAppointment) {
         return toAjax(busAppointmentService.insertBusAppointment(busAppointment));
     }
 
@@ -63,8 +68,7 @@ public class BusAppointmentController extends BaseController
     @PreAuthorize("@ss.hasPermi('bussiness:appointment:edit')")
     @Log(title = "养修信息预约", businessType = BusinessType.UPDATE)
     @PutMapping
-    public AjaxResult edit(@RequestBody BusAppointment busAppointment)
-    {
+    public AjaxResult edit(@RequestBody BusAppointment busAppointment) {
         return toAjax(busAppointmentService.updateBusAppointment(busAppointment));
     }
 
@@ -73,8 +77,7 @@ public class BusAppointmentController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('bussiness:appointment:query')")
     @GetMapping(value = "/{id}")
-    public AjaxResult getInfo(@PathVariable("id") Long id)
-    {
+    public AjaxResult getInfo(@PathVariable("id") Long id) {
         return AjaxResult.success(busAppointmentService.selectBusAppointmentById(id));
     }
 
@@ -83,15 +86,15 @@ public class BusAppointmentController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('bussiness:appointment:remove')")
     @Log(title = "养修信息预约", businessType = BusinessType.DELETE)
-	@DeleteMapping("/{ids}")
-    public AjaxResult remove(@PathVariable Long[] ids)
-    {
+    @DeleteMapping("/{ids}")
+    public AjaxResult remove(@PathVariable Long[] ids) {
         return toAjax(busAppointmentService.deleteBusAppointmentByIds(ids));
     }
 
 
     /**
      * 确认到店
+     *
      * @param id
      * @return
      */
@@ -105,6 +108,7 @@ public class BusAppointmentController extends BaseController
 
     /**
      * 取消预约
+     *
      * @param id
      * @return
      */
@@ -115,4 +119,20 @@ public class BusAppointmentController extends BaseController
         busAppointmentService.cancel(id);
         return AjaxResult.success();
     }
+
+    @Anonymous
+    @PostMapping("/smsCode")
+    public AjaxResult smsCode(String phone) {
+        smsService.sendCaptcha(phone, "appointment", 120);
+        return AjaxResult.success();
+    }
+
+    @Anonymous
+    @PostMapping("/reservation")
+    public AjaxResult reservation(@RequestBody ReservationVo reservationVo) {
+        //执行新增预约单
+        int reservation = busAppointmentService.reservation(reservationVo);
+        return reservation > 0 ? AjaxResult.success("预约成功") : AjaxResult.error("预约失败");
+    }
+
 }

@@ -3,9 +3,13 @@ package com.wolfcode.car.appointment.service.impl;
 import java.util.List;
 
 import com.wolfcode.car.appointment.constants.BusAppointmentEnum;
+import com.wolfcode.car.appointment.domain.vo.ReservationVo;
+import com.wolfcode.car.common.core.domain.AjaxResult;
+import com.wolfcode.car.common.core.service.SmsService;
 import com.wolfcode.car.common.exception.BusinessException;
 import com.wolfcode.car.common.utils.AssertUtils;
 import com.wolfcode.car.common.utils.DateUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.wolfcode.car.appointment.mapper.BusAppointmentMapper;
@@ -23,7 +27,8 @@ import org.springframework.util.Assert;
 public class BusAppointmentServiceImpl implements IBusAppointmentService {
     @Autowired
     private BusAppointmentMapper busAppointmentMapper;
-
+    @Autowired
+    private SmsService smsService;
     /**
      * 查询养修信息预约
      *
@@ -149,5 +154,14 @@ public class BusAppointmentServiceImpl implements IBusAppointmentService {
         newObj.setId(id);
         newObj.setStatus(status);
         busAppointmentMapper.updateBusAppointment(newObj);
+    }
+
+    @Override
+    public int reservation(ReservationVo reservationVo) {
+        //验证手机的验证码是否正确
+        smsService.checkCaptcha(reservationVo.getCustomerPhone(), "appointment", reservationVo.getCode());
+        BusAppointment busAppointment=new BusAppointment();
+        BeanUtils.copyProperties(reservationVo,busAppointment);
+        return insertBusAppointment(busAppointment);
     }
 }
