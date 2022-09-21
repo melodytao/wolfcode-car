@@ -49,4 +49,27 @@ public class AssertUtils {
             throw new BusinessException("不是合法的手机号");
         }
     }
+
+    /**
+     * 期望状态不相等，相等抛异常
+     * @param status
+     * @param expectStatus
+     * @param msg
+     */
+    public static void checkNotEqualsStatus(int status,int expectStatus,String msg){
+        if(status==expectStatus){
+            throw new BusinessException(msg);
+        }
+    }
+
+    /**
+     * 期望状态不相等，相等抛异常
+     * @param status
+     * @param expectStatus
+     */
+    public static void checkNotEqualsStatus(int status,int expectStatus){
+        checkNotEqualsStatus(status,expectStatus,"非法参数");
+    }
+
+
 }

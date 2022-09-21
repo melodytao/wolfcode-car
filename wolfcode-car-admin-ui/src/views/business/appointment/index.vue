@@ -257,7 +257,7 @@ import {
   updateAppointment,
   cancelAppointment,
   arrival,
-} from "@/api/bussiness/appointment";
+} from "@/api/business/appointment";
 
 export default {
   name: "Appointment",

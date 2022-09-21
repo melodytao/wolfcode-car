@@ -197,6 +197,7 @@
         <module>wolfcode-car-common</module>
         <module>wolfcode-car-appointment</module>
         <module>wolfcode-car-front</module>
+        <module>wolf-car-serviceitem</module>
     </modules>
     <packaging>pom</packaging>
 

@@ -54,8 +54,8 @@ public class BusAppointment implements Serializable {
     @Excel(name = "备注信息")
     private String info;
 
-    /** 状态【预约中0/已到店1/用户取消2/超时取消3】 */
-    @Excel(name = "状态【预约中0/已到店1/用户取消2/超时取消3】")
+    /** 状态【预约中0/已到店1/用户取消2/超时取消3】/已结算4/已支付5 */
+    @Excel(name = "状态【预约中0/已到店1/用户取消2/超时取消3/已结算4/已支付5】")
     private Integer status;
 
 }
