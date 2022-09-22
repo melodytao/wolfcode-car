@@ -57,7 +57,7 @@ public class BusServiceItemServiceImpl implements IBusServiceItemService {
     @Override
     public int insertBusServiceItem(BusServiceItem busServiceItem) {
         busServiceItem.setCreateTime(DateUtils.getNowDate());
-        //判断师傅套餐
+        //判断是否套餐
         if (CarPackageEnum.YES.getCode() == busServiceItem.getCarPackage()) {
             //审核套餐，设置状态初始化
             busServiceItem.setAuditStatus(AuditStatusEnum.INIT.getCode());

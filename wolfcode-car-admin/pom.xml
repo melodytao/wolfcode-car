@@ -72,6 +72,12 @@
             <artifactId>wolf-car-serviceitem</artifactId>
             <version>3.8.3</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.wolfcode</groupId>
+            <artifactId>wolfcode-car-statement</artifactId>
+            <version>3.8.3</version>
+        </dependency>
     </dependencies>
 
     <build>
