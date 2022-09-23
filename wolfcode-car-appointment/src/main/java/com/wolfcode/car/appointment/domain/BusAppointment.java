@@ -43,7 +43,7 @@ public class BusAppointment implements Serializable {
 
     /** 服务类型【维修0/保养1】 */
     @Excel(name = "服务类型【维修0/保养1】")
-    private Integer serviceType;
+    private Long serviceType;
 
     /** 创建时间 */
     @JsonFormat(pattern = "yyyy-MM-dd")

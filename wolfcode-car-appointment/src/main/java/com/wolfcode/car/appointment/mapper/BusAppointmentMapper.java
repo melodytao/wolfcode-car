@@ -58,4 +58,6 @@ public interface BusAppointmentMapper
      * @return 结果
      */
     public int deleteBusAppointmentByIds(Long[] ids);
+
+
 }

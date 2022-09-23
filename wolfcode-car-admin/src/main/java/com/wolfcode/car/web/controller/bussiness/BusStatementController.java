@@ -3,6 +3,10 @@ package com.wolfcode.car.web.controller.bussiness;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
+
+import com.wolfcode.car.appointment.domain.BusStatement;
+import com.wolfcode.car.appointment.service.IBusAppointmentService;
+import com.wolfcode.car.appointment.service.IBusStatementService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,8 +21,6 @@ import com.wolfcode.car.common.annotation.Log;
 import com.wolfcode.car.common.core.controller.BaseController;
 import com.wolfcode.car.common.core.domain.AjaxResult;
 import com.wolfcode.car.common.enums.BusinessType;
-import com.wolfcode.car.statement.domain.BusStatement;
-import com.wolfcode.car.statement.service.IBusStatementService;
 import com.wolfcode.car.common.utils.poi.ExcelUtil;
 import com.wolfcode.car.common.core.page.TableDataInfo;
 
@@ -34,7 +36,8 @@ public class BusStatementController extends BaseController
 {
     @Autowired
     private IBusStatementService busStatementService;
-
+    @Autowired
+    private IBusAppointmentService busAppointmentService;
     /**
      * 查询结算单列表
      */
@@ -90,5 +93,24 @@ public class BusStatementController extends BaseController
     public AjaxResult remove(@PathVariable Long id)
     {
         return toAjax(busStatementService.deleteBusStatementById(id));
+    }
+
+    @PutMapping("/pay/{id}")
+    @PreAuthorize("@ss.hasPermi('business:statementItem:pay')")
+    public AjaxResult pay(@PathVariable Long id){
+        busStatementService.pay(id);
+        return AjaxResult.success("支付成功");
+    }
+
+    /**
+     * 生成结算单
+     * @param id
+     * @return
+     */
+    @PreAuthorize("@ss.hasPermi('business:appointment:generateStatement')")
+    @PutMapping("/generate/{id}")
+    public AjaxResult generateStatement(@PathVariable Long id) {
+        BusStatement statement = busAppointmentService.generateStatement(id);
+        return AjaxResult.success(statement.getId());
     }
 }

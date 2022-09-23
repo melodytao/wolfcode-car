@@ -56,3 +56,10 @@ export function cancelAppointment(id){
     method:'put'
   })
 }
+//提交结算单
+export function generateStatement(id) {
+  return request({
+    url: '/business/statement/generate/' + id,
+    method: 'put',
+  })
+}

@@ -3,10 +3,10 @@ package com.wolfcode.car.appointment.service.impl;
 import java.util.List;
 
 import com.wolfcode.car.appointment.constants.BusAppointmentEnum;
+import com.wolfcode.car.appointment.domain.BusStatement;
 import com.wolfcode.car.appointment.domain.vo.ReservationVo;
-import com.wolfcode.car.common.core.domain.AjaxResult;
+import com.wolfcode.car.appointment.service.IBusStatementService;
 import com.wolfcode.car.common.core.service.SmsService;
-import com.wolfcode.car.common.exception.BusinessException;
 import com.wolfcode.car.common.utils.AssertUtils;
 import com.wolfcode.car.common.utils.DateUtils;
 import org.springframework.beans.BeanUtils;
@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import com.wolfcode.car.appointment.mapper.BusAppointmentMapper;
 import com.wolfcode.car.appointment.domain.BusAppointment;
 import com.wolfcode.car.appointment.service.IBusAppointmentService;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 /**
@@ -29,6 +30,9 @@ public class BusAppointmentServiceImpl implements IBusAppointmentService {
     private BusAppointmentMapper busAppointmentMapper;
     @Autowired
     private SmsService smsService;
+    @Autowired
+    private IBusStatementService busStatementService;
+
     /**
      * 查询养修信息预约
      *
@@ -136,7 +140,7 @@ public class BusAppointmentServiceImpl implements IBusAppointmentService {
         AssertUtils.checkStatus(busAppointment.getStatus(),
                 BusAppointmentEnum.APPOINTMENT.getCode());
         //更新状态
-        BusAppointment newObj=new BusAppointment();
+        BusAppointment newObj = new BusAppointment();
         newObj.setId(id);
         newObj.setStatus(BusAppointmentEnum.CANCEL.getCode());
         busAppointmentMapper.updateBusAppointment(newObj);
@@ -150,7 +154,7 @@ public class BusAppointmentServiceImpl implements IBusAppointmentService {
      */
     @Override
     public void changeStatus(Long id, Integer status) {
-        BusAppointment newObj=new BusAppointment();
+        BusAppointment newObj = new BusAppointment();
         newObj.setId(id);
         newObj.setStatus(status);
         busAppointmentMapper.updateBusAppointment(newObj);
@@ -160,8 +164,46 @@ public class BusAppointmentServiceImpl implements IBusAppointmentService {
     public int reservation(ReservationVo reservationVo) {
         //验证手机的验证码是否正确
         smsService.checkCaptcha(reservationVo.getCustomerPhone(), "appointment", reservationVo.getCode());
-        BusAppointment busAppointment=new BusAppointment();
-        BeanUtils.copyProperties(reservationVo,busAppointment);
+        BusAppointment busAppointment = new BusAppointment();
+        BeanUtils.copyProperties(reservationVo, busAppointment);
         return insertBusAppointment(busAppointment);
+    }
+
+    /**
+     * 生成结算单
+     *
+     * @param appointmentId 预约id
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public BusStatement generateStatement(Long appointmentId) {
+        BusAppointment busAppointment = selectBusAppointmentById(appointmentId);
+        Assert.notNull(busAppointment, "非法参数");
+        //到店，已结算，支付状态才可以获取或生成结算单
+        boolean pass = BusAppointmentEnum.ARRIVAL.getCode() == busAppointment.getStatus() ||
+                BusAppointmentEnum.SETTLE.getCode() == busAppointment.getStatus() ||
+                BusAppointmentEnum.PAID.getCode() == busAppointment.getStatus();
+        Assert.state(pass,"非法操作");
+        //通过预约单id查询结算单对象
+        BusStatement busStatement=busStatementService.getBusStatementByAppointmentId(appointmentId);
+        //预约单id能查询出预约单，直接返回即可，不用生成
+        if(busStatement!=null) return busStatement;
+        // 生成结算单
+        busStatement=new BusStatement();
+        busStatement.setCustomerName(busAppointment.getCustomerName());
+        busStatement.setCustomerPhone(busAppointment.getCustomerPhone());
+        busStatement.setServiceType(busAppointment.getServiceType());
+        busStatement.setCarSeries(busAppointment.getCarSeries());
+        busStatement.setAppointmentId(appointmentId);
+        busStatement.setLicensePlate(busAppointment.getLicensePlate());
+        busStatement.setInfo(busAppointment.getInfo());
+        busStatement.setActualArrivalTime(busAppointment.getActualArrivalTime());
+        busStatement.setCreateTime(DateUtils.getNowDate());
+        // 生成预约单
+        busStatementService.insertBusStatement(busStatement);
+        // 修改预约单状态(结算单生成---已结算)
+        changeStatus(appointmentId,BusAppointmentEnum.SETTLE.getCode());
+        return busStatement;
     }
 }

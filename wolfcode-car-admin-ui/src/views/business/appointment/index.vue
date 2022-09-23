@@ -256,6 +256,7 @@ import {
   addAppointment,
   updateAppointment,
   cancelAppointment,
+  generateStatement,
   arrival,
 } from "@/api/business/appointment";
 
@@ -341,7 +342,7 @@ export default {
       this.loading = true;
       listAppointment(this.queryParams).then((response) => {
         this.appointmentList = response.rows;
-        console.log(this.appointmentList);
+        // console.log(this.appointmentList);
         this.total = response.total;
         this.loading = false;
       });
@@ -451,7 +452,21 @@ export default {
         })
         .catch(() => {});
     },
-    handleStatement(row) {},
+    // 生成结算单
+    handleStatement(row) {
+      const id = row.id;
+      let _this= this;
+      this.$modal.confirm("是否需要生成结算单?")
+      .then(function(){
+        return generateStatement(id);
+      })
+      .then((response)=>{
+        _this.$router.push({
+          path: "/business/statement/item",
+          query:{id: response.data}
+        })
+      })
+    },
     handleCancel(row) {
       const id = row.id;
       this.$modal

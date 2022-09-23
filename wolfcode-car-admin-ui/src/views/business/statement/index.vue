@@ -129,8 +129,8 @@
             size="mini"
             type="text"
             icon="el-icon-notebook-2"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['statement:statement:edit']"
+            @click="handleDetail(scope.row)"
+            v-hasPermi="['business:statementItem:list']"
             >明细</el-button
           >
 
@@ -420,16 +420,13 @@ export default {
         })
         .catch(() => {});
     },
-    /** 导出按钮操作 */
-    handleExport() {
-      this.download(
-        "statement/statement/export",
-        {
-          ...this.queryParams,
-        },
-        `statement_${new Date().getTime()}.xlsx`
-      );
-    },
+    /** 结算单操作按钮 */
+    handleDetail(row){
+        const id =row.id;
+        this.$router.push({
+            path:"/business/statement/item",query:{id}
+        });
+    }
   },
 };
 </script>

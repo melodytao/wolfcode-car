@@ -42,3 +42,12 @@ export function delStatement(id) {
     method: 'delete'
   })
 }
+
+//支付
+export function payStatement(id) {
+    return request({
+      url: '/business/statement/pay/' + id,
+      method: 'put'
+    })
+}
+  

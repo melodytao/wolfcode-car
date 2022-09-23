@@ -2,7 +2,9 @@ package com.wolfcode.car.appointment.service;
 
 import java.util.List;
 import com.wolfcode.car.appointment.domain.BusAppointment;
+import com.wolfcode.car.appointment.domain.BusStatement;
 import com.wolfcode.car.appointment.domain.vo.ReservationVo;
+
 
 /**
  * 养修信息预约Service接口
@@ -85,6 +87,12 @@ public interface IBusAppointmentService
      * @return
      */
     int reservation(ReservationVo reservationVo);
-    //TODO 生成结算单
+
+    /**
+     * 生成结算单
+     * @param appointmentId 预约id
+     * @return
+     */
+    BusStatement generateStatement(Long appointmentId);
 
 }
