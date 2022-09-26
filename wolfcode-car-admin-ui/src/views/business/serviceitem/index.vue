@@ -42,7 +42,7 @@
       <el-form-item label="审核状态:">
         <el-select v-model="queryParams.auditStatus" clearable>
           <el-option
-            v-for="dict in dict.type.si_audit_status"
+            v-for="dict in dict.type.package_audit_status"
             :key="dict.value"
             :label="dict.label"
             :value="dict.value"
