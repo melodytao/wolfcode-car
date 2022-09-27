@@ -198,6 +198,7 @@
         <module>wolfcode-car-appointment</module>
         <module>wolfcode-car-front</module>
         <module>wolfcode-car-audit</module>
+        <module>wolfcode-car-flowdefinition</module>
     </modules>
     <packaging>pom</packaging>
 
