@@ -57,3 +57,19 @@ export function serviceItemSaleOff(params) {
     method: 'put'
   })
 }
+//发起审核按钮操作
+export function serviceItemAuditInfo(params){
+  return request({
+    url: '/business/serviceitem/audit/' +params.id,
+    method: 'get'
+  });
+}
+//审核提交操作
+export function serviceItemStartAudit(params) {
+  return request({
+    url: '/business/serviceitem/audit',
+    method: 'put',
+    data: params
+  })
+}
+

@@ -28,6 +28,23 @@
             <artifactId>swagger-models</artifactId>
             <version>1.6.2</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.wolfcode</groupId>
+            <artifactId>wolfcode-car-system</artifactId>
+            <version>3.8.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wolfcode</groupId>
+            <artifactId>wolfcode-car-flowdefinition</artifactId>
+            <version>3.8.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.wolfcode</groupId>
+            <artifactId>wolfcode-car-audit</artifactId>
+            <version>3.8.3</version>
+        </dependency>
     </dependencies>
 
 </project>

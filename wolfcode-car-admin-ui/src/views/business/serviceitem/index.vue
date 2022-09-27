@@ -93,7 +93,7 @@
           icon="el-icon-download"
           size="mini"
           @click="handleAudit"
-          :disabled="isAudit"
+          :disabled="isNotAudit"
           v-hasPermi="['business:serviceitem:audit']"
           >发起审核</el-button
         >
@@ -243,6 +243,70 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+
+    <!-- 审核页面对话框 -->
+    <el-dialog 
+      title="审核页面"
+      :visible.sync="auditOpen"
+      width="600px"
+      append-to-body
+      >
+      <el-form
+        ref="auditInfo"
+        :model="auditInfo"
+        :rules="auditRules"
+        label-width="150px"
+      >
+        <el-form-item label="服务单项名称：" prop="name">
+          <el-input disabled v-model="auditInfo.serviceItem.name" />
+        </el-form-item>
+        <el-form-item label="原价：" prop="originalPrice">
+          <el-input disabled v-model="auditInfo.serviceItem.originalPrice" />
+        </el-form-item>
+        <el-form-item label="折扣价：" prop="discountPrice">
+          <el-input disabled v-model="auditInfo.serviceItem.discountPrice" />
+        </el-form-item>
+        <el-form-item label="审核人(店长)：" prop="shopOwners">
+          <el-select
+            size="medium"
+            v-model="shopOwnerId"
+          >
+            <el-option
+              v-for="(item) in auditInfo.shopOwners"
+              :key="item.userId"
+              :label="item.nickName"
+              :value="item.userId"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item
+          label="审核人(财务)："
+          v-if="auditInfo.serviceItem.discountPrice >= auditInfo.discountPrice"
+          prop="finances"
+        >
+          <el-select 
+            size="medium"
+            v-model="financeId"
+            >
+            <el-option
+              v-for="(item) in auditInfo.finances"
+              :key="item.userId"
+              :label="item.nickName"
+              :value="item.userId"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="备注信息：" prop="info">
+          <el-input v-model="form.info" />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="auditSubmit">确 定</el-button>
+        <el-button @click="cancel">取 消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
   
@@ -255,6 +319,8 @@ import {
   updateItem,
   serviceItemSaleOn,
   serviceItemSaleOff,
+  serviceItemAuditInfo,
+  serviceItemStartAudit
 } from "@/api/business/serviceitem";
 
 export default {
@@ -268,11 +334,13 @@ export default {
   data() {
     return {
       // 是否可以发起审核
-      isAudit: false,
+      isNotAudit: true,
       // 遮罩层
       loading: true,
       // 选中数组
       ids: [],
+      // 单个选中的
+      id:[],
       // 非单个禁用
       single: true,
       // 非多个禁用
@@ -287,6 +355,8 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      // 是否显示审核页面
+      auditOpen:false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -323,6 +393,25 @@ export default {
           { required: true, message: "备注信息不能为空", trigger: "blur" },
         ],
       },
+      auditRules: {
+        name: [
+          { required: true, message: "服务名称不能为空", trigger: "blur" },
+        ],
+        originalPrice: [
+          { required: true, message: "服务原价不能为空", trigger: "blur" },
+        ],
+        discountPrice: [
+          { required: true, message: "服务折扣价不能为空", trigger: "blur" },
+        ],
+      },
+      auditInfo:{
+        serviceItem: {},
+        shopOwners: {},
+        finances:{},
+        discountPrice:0
+      },
+      shopOwnerId:null,
+      financeId:null
     };
   },
   created() {
@@ -358,6 +447,7 @@ export default {
     },
     // 取消按钮
     cancel() {
+      this.auditOpen=false;
       this.open = false;
       this.reset();
     },
@@ -375,6 +465,12 @@ export default {
         auditStatus: 0,
         saleStatus: 0,
       };
+      this.auditInfo={
+        serviceItem: {},
+        shopOwners: {},
+        finances:{},
+        discountPrice:0
+      }
       this.resetForm("form");
     },
     /** 搜索按钮操作 */
@@ -389,9 +485,35 @@ export default {
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
-      this.ids = selection.map((item) => item.id);
-      this.single = selection.length !== 1;
-      this.multiple = !selection.length;
+      // 可以发起编辑的状态
+      // 处理单个发起审核的
+      // 是套餐,未上架,初始化状态,审批被拒绝的
+      // 是否套餐【是1/否0】
+      // 【1已上架/0未上架】
+      // 审核状态【初始化/审核中/审核通过/审核拒绝/无需审核】
+      let isSingleSeletion=selection.length == 1;
+      if(!isSingleSeletion){//非当个
+        this.isNotAudit = true;
+        return;
+      }
+      let serviceItem=selection[0];
+      let isPacakge=serviceItem.carPackage == 1; // 是套餐
+      let isNoOnSale=serviceItem.saleStatus == 0; // 未上架
+      let isPassAudit=serviceItem.auditStatus == 0 || serviceItem.auditStatus == 3;
+      if(!isPacakge){ //非套餐
+        this.isNotAudit = true;
+        return;
+      }
+      if(!isNoOnSale){//已上架
+        this.isNotAudit = true;
+        return;
+      }
+      if(!isPassAudit){//审核校验不通过
+        this.isNotAudit = true;
+        return;
+      }
+      this.isNotAudit = false;
+      this.id= serviceItem.id;
     },
     /** 新增按钮操作 */
     handleAdd() {
@@ -444,7 +566,35 @@ export default {
         })
         .catch(() => {});
     },
-    handleAudit(row) {},
+    /** 发起审核处理 */
+    handleAudit() {
+      if(this.isNotAudit){
+        return;
+      }
+      this.auditOpen=true;
+      this.reset();
+      serviceItemAuditInfo({id:this.id}).then((response)=>{
+        this.auditInfo=response.data;
+        this.shopOwnerId=this.auditInfo.shopOwners[0].userId;
+        if(this.auditInfo.finances !==undefined){
+          this.financeId=this.auditInfo.finances[0].userId;
+        }
+      })
+    },
+    /** 审核提交 */
+    auditSubmit() {
+      this.auditOpen=false;
+      let auditParams={
+        id: this.auditInfo.serviceItem.id,
+        shopOwnerId:this.shopOwnerId,
+        financeId:this.financeId,
+        info:this.form.info
+      };
+      serviceItemStartAudit(auditParams).then((response)=>{
+        this.$modal.msgSuccess("提交成功");
+        this.getList();
+      });
+    },
     // 上架操作
     handleOnsale(row) {
       const id = row.id;

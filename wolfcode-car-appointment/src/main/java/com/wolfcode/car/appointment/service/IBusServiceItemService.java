@@ -1,6 +1,9 @@
 package com.wolfcode.car.appointment.service;
 
 import com.wolfcode.car.appointment.domain.BusServiceItem;
+import com.wolfcode.car.appointment.domain.info.ServiceItemAuditInfo;
+import com.wolfcode.car.appointment.domain.vo.ServiceItemAuditVo;
+
 import java.util.List;
 
 /**
@@ -70,4 +73,17 @@ public interface IBusServiceItemService
      * @param id
      */
     void saleOff(Long id);
+
+    /**
+     * 编辑审核信息
+     * @param id
+     * @return
+     */
+    ServiceItemAuditInfo auditInfo(Long id);
+
+    /**
+     * 开启审核
+     * @param serviceItemAuditVo
+     */
+    void startAudit(ServiceItemAuditVo serviceItemAuditVo);
 }

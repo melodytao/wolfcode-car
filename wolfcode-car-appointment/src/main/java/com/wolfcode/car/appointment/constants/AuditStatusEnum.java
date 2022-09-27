@@ -6,7 +6,7 @@ public enum AuditStatusEnum {
     INIT(0,"初始化"),
     AUDITING(1,"审核中"),
     APPROVED(2,"审核通过"),
-    REPLY(3,"审批拒绝"),
+    REJECT(3,"审批拒绝"),
     NOREQUIRED(4,"无需审核");
     /**
      * 状态码

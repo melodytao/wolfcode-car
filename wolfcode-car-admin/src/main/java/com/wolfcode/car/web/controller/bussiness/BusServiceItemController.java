@@ -2,6 +2,8 @@ package com.wolfcode.car.web.controller.bussiness;
 
 import java.util.List;
 import com.wolfcode.car.appointment.domain.BusServiceItem;
+import com.wolfcode.car.appointment.domain.info.ServiceItemAuditInfo;
+import com.wolfcode.car.appointment.domain.vo.ServiceItemAuditVo;
 import com.wolfcode.car.appointment.service.IBusServiceItemService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -114,6 +116,19 @@ public class BusServiceItemController extends BaseController
     @PreAuthorize("@ss.hasPermi('business:serviceItem:saleOff')")
     public AjaxResult saleOff(@PathVariable Long id) {
         busServiceItemService.saleOff(id);
+        return AjaxResult.success();
+    }
+
+    @GetMapping("/audit/{id}")
+    @PreAuthorize("@ss.hasPermi('business:serviceItem:audit')")
+    public AjaxResult auditInfo(@PathVariable Long id){
+        ServiceItemAuditInfo auditInfo = busServiceItemService.auditInfo(id);
+        return AjaxResult.success(auditInfo);
+    }
+    @PutMapping("/audit")
+    @PreAuthorize("@ss.hasPermi('business:serviceItem:startAudit')")
+    public AjaxResult startAudit(@RequestBody ServiceItemAuditVo auditVo){
+        busServiceItemService.startAudit(auditVo);
         return AjaxResult.success();
     }
 

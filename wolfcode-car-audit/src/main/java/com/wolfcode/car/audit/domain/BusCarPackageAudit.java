@@ -22,7 +22,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 public class BusCarPackageAudit implements Serializable
 {
     private static final long serialVersionUID = 1L;
-
+    public static final Integer FLOW_AUDIT_TYPE = 0;//服务套餐审核类型
     /** 主键 */
     private Long id;
 
