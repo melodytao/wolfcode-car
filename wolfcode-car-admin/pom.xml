@@ -59,23 +59,10 @@
             <groupId>com.wolfcode</groupId>
             <artifactId>wolfcode-generator</artifactId>
         </dependency>
-
-        <!--car=appointment-->
+        <!-- 业务代码 -->
         <dependency>
             <groupId>com.wolfcode</groupId>
-            <artifactId>wolfcode-car-appointment</artifactId>
-            <version>3.8.3</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.wolfcode</groupId>
-            <artifactId>wolfcode-car-audit</artifactId>
-            <version>3.8.3</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.wolfcode</groupId>
-            <artifactId>wolfcode-car-flowdefinition</artifactId>
+            <artifactId>wolfcode-car-business</artifactId>
             <version>3.8.3</version>
         </dependency>
     </dependencies>

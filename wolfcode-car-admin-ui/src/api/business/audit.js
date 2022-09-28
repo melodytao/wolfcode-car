@@ -42,3 +42,46 @@ export function delAudit(id) {
     method: 'delete'
   })
 }
+
+// 我的待办
+export function listTodo(params){
+  return request({
+    url: '/business/audit/todo',
+    method: 'get',
+    params
+  })
+}
+
+// 审核
+export function carPackageAudit(data){
+  return request({
+    url: '/business/audit/audit',
+    method: 'post',
+    data
+  })
+}
+
+// 审批历史
+export function carPackageAuditHistory(instanceId) {
+  return request({
+    url: '/business/audit/history/' + instanceId,
+    method: 'get',
+  })
+}
+
+// 查看进度
+export function carPackageAuditProcess(id) {
+  return request({
+    url: '/business/audit/process/' + id,
+    method: 'get',
+  })
+}
+
+// 我的已办
+export function listDone(params) {
+  return request({
+    url: '/business/audit/done',
+    method: 'get',
+    params
+  })
+}

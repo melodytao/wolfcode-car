@@ -1,49 +1,6 @@
 <template>
   <div class="app-container">
-    <el-form
-      :model="queryParams"
-      ref="queryForm"
-      size="small"
-      :inline="true"
-      v-show="showSearch"
-      label-width="68px"
-    >
-      <el-form-item label="创建时间">
-        <el-date-picker
-          v-model="dateRange"
-          style="width: 240px"
-          value-format="yyyy-MM-dd"
-          type="daterange"
-          range-separator="-"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-        >
-        </el-date-picker>
-      </el-form-item>
-      <el-form-item label="审核状态" prop="status">
-        <el-select v-model="queryParams.status" clearable>
-          <el-option
-            v-for="dict in dict.type.package_audit_status"
-            :key="dict.value"
-            :label="dict.label"
-            :value="dict.value"
-          ></el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button
-          type="primary"
-          icon="el-icon-search"
-          size="mini"
-          @click="handleQuery"
-          >搜索</el-button
-        >
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery"
-          >重置</el-button
-        >
-      </el-form-item>
-    </el-form>
-
+    <!-- 表格 -->
     <el-table v-loading="loading" :data="auditList">
       <el-table-column label="套餐名称" align="center" prop="serviceItemName" />
       <el-table-column
@@ -82,6 +39,14 @@
             size="mini"
             type="text"
             icon="el-icon-edit"
+            @click="handleAudit(scope.row.id)"
+            v-hasPermi="['business:carPackageAudit:audit']"
+            >审批</el-button
+          >
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-edit"
             @click="listHistory(scope.row.instanceId)"
             v-hasPermi="['business:carPackageAudit:history']"
             >审批历史</el-button
@@ -94,15 +59,6 @@
             v-hasPermi="['business:carPackageAudit:processImg']"
             >进度查看</el-button
           >
-
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-delete"
-            @click="cancelAudit(scope.row.id)"
-            v-hasPermi="['business:carPackageAudit:cancel']"
-            >撤销</el-button
-          >
         </template>
       </el-table-column>
     </el-table>
@@ -114,72 +70,73 @@
       :limit.sync="queryParams.pageSize"
       @pagination="getList"
     />
-    <!--  审批历史对话框  -->
+
+    <!--  审核对话框  -->
     <el-dialog
-      title="审批历史"
-      :visible.sync="historyDialog.open"
-      width="800px"
+      title="流程审核"
+      :visible.sync="auditDialog.open"
+      width="500px"
       append-to-body
     >
-      <el-table
-        ref="tables"
-        v-loading="historyDialog.loading"
-        :data="historyDialog.list"
+      <el-form
+        ref="auditForm"
+        :model="auditDialog.data"
+        :rules="auditDialog.rules"
+        label-width="80px"
       >
-        <el-table-column label="任务名称" align="center" prop="taskName" />
-        <el-table-column label="开始时间" align="center" prop="startTime" />
-        <el-table-column
-          label="结束时间"
-          align="center"
-          prop="endTime"
-          width="130"
-          :show-overflow-tooltip="true"
-        />
-        <el-table-column
-          label="耗时"
-          align="center"
-          prop="durationInMillis"
-          width="180"
-        >
-        </el-table-column>
-        <el-table-column
-          label="审批意见"
-          align="center"
-          prop="comment"
-          width="180"
-        >
-        </el-table-column>
-      </el-table>
+        <el-col :span="12">
+          <el-form-item label="审批意见" prop="auditStatus">
+            <el-select
+              v-model="auditDialog.data.auditStatus"
+              placeholder="请选择审批意见"
+            >
+              <el-option value="true" label="同意"></el-option>
+              <el-option value="false" label="拒绝"></el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="24">
+          <el-form-item label="批注" prop="info">
+            <el-input
+              v-model="auditDialog.data.info"
+              type="textarea"
+              placeholder="请输入批注"
+              maxlength="250"
+              rows="4"
+            ></el-input>
+          </el-form-item>
+        </el-col>
+      </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="closeHistoryDialog">关 闭</el-button>
+        <el-button type="primary" @click="submitAuditForm">确 定</el-button>
+        <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
-    <!--  流程进度图对话框  -->
-    <el-dialog
-      title="流程进度图"
-      :visible.sync="processDialog.open"
-      width="1200px"
-      append-to-body
-    >
+    <!-- 审批历史  -->
+    <el-dialog title="审批历史" :visible.sync="historyDialog.open" width="1200px" append-to-body>
+      <el-table ref="tables" v-loading="historyDialog.loading" :data="historyDialog.list" :default-sort="defaultSort">
+        <el-table-column label="任务名称" align="center" prop="taskName"/>
+        <el-table-column label="开始时间" align="center" prop="startTime" width="180"/>
+        <el-table-column label="结束时间" align="center" prop="endTime" width="180" :show-overflow-tooltip="true"/>
+        <el-table-column label="耗时" align="center" prop="durationInMillis" width="180"/>
+        <el-table-column label="审批意见" align="center" prop="comment" width="180"/>
+      </el-table>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="cancel">关 闭</el-button>
+      </div>
+    </el-dialog>
+     <!--  流程进度图对话框  -->
+     <el-dialog title="流程进度图" :visible.sync="processDialog.open" width="1200px" append-to-body>
       <div v-html="processDialog.img"></div>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="closeProcessDialog">关 闭</el-button>
+        <el-button @click="cancel">关 闭</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
-  
-  <script>
-import {
-  listAudit,
-  getAudit,
-  delAudit,
-  addAudit,
-  updateAudit,
-  carPackageAuditHistory,
-  carPackageAuditProcess,
-  cancelCarPackageAudit
-} from "@/api/business/audit";
+    
+<script>
+import { listTodo,carPackageAudit,carPackageAuditHistory,carPackageAuditProcess } from "@/api/business/audit";
 
 export default {
   name: "Audit",
@@ -205,6 +162,8 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+        // 默认排序
+      defaultSort: {prop: "loginTime", order: "descending"},
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -222,17 +181,29 @@ export default {
       form: {},
       // 表单校验
       rules: {},
-       // 审批历史弹窗
+      auditDialog: {
+        open: false,
+        data: {},
+        rules: {
+          auditStatus: [
+            { required: true, message: "审批意见不能为空", trigger: "blur" },
+          ],
+          info: [
+            { required: true, message: "批注信息不能为空", trigger: "blur" },
+          ],
+        },
+      },
+      // 审批历史弹窗
       historyDialog: {
-        open: false, // 显示状态
-        loading: false, // 加载状态
-        list: [], // 列表数据
+        open: false,
+        loading: false,
+        list: [],
       },
       // 流程进度图弹窗
       processDialog: {
         open: false,
         img: '',
-      }
+      },
     };
   },
   created() {
@@ -242,16 +213,17 @@ export default {
     /** 查询套餐审核列表 */
     getList() {
       this.loading = true;
-      listAudit(this.addDateRange(this.queryParams, this.dateRange)).then(
-        (response) => {
-          this.auditList = response.rows;
-          this.total = response.total;
-          this.loading = false;
-        }
-      );
+      listTodo(this.queryParams).then((response) => {
+        this.auditList = response.rows;
+        this.total = response.total;
+        this.loading = false;
+      });
     },
     // 取消按钮
     cancel() {
+      this.historyDialog.open= false;
+      this.auditDialog.open= false;
+      this.processDialog.open= false;
       this.open = false;
       this.reset();
     },
@@ -303,25 +275,16 @@ export default {
         this.title = "修改套餐审核";
       });
     },
-    /** 提交按钮 */
-    submitForm() {
-      this.$refs["form"].validate((valid) => {
-        if (valid) {
-          if (this.form.id != null) {
-            updateAudit(this.form).then((response) => {
-              this.$modal.msgSuccess("修改成功");
-              this.open = false;
-              this.getList();
-            });
-          } else {
-            addAudit(this.form).then((response) => {
-              this.$modal.msgSuccess("新增成功");
-              this.open = false;
-              this.getList();
-            });
-          }
-        }
-      });
+    /** 提交审核 */
+    submitAuditForm() {
+        this.$refs['auditForm'].validate(valid =>{
+            if(!valid) return;
+            carPackageAudit(this.auditDialog.data).then(res=>{
+                this.auditDialog.open = false;
+                this.getList();
+                this.$modal.msgSuccess("审批成功");
+            }).catch(() => {});;
+        });
     },
     /** 删除按钮操作 */
     handleDelete(row) {
@@ -337,21 +300,21 @@ export default {
         })
         .catch(() => {});
     },
-  // 审批历史
-  listHistory(id) {
-      this.historyDialog.open = true;
-      this.historyDialog.loading = true;
+    handleAudit(id) {
+        this.resetForm("auditForm");
+        this.auditDialog.data={};
+        this.auditDialog.open=true;
+        this.auditDialog.data.id= id;
+    },
+    listHistory(instanceId){
+      this.historyDialog.open = true
+      this.historyDialog.loading = true
       // 请求审批历史接口的方法
-      carPackageAuditHistory(id).then((res) => {
+      carPackageAuditHistory(instanceId).then((res) => {
         this.historyDialog.list = res.rows;
         this.historyDialog.loading = false;
       });
     },
-    // 关闭审批历史弹窗
-    closeHistoryDialog() {
-      this.historyDialog.open = false;
-    },
-
     // 查看进度
     viewProcess(id) {
       this.processDialog.open = true;
@@ -359,27 +322,7 @@ export default {
         this.processDialog.img = res;
       });
     },
-    // 关闭流程进度图弹窗
-    closeProcessDialog() {
-      this.processDialog.open = false
-    },
-    // 撤销审批
-    cancelAudit(id) {
-      this.$confirm("此操作将撤销审核, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      }).then(() => {
-        cancelCarPackageAudit(id).then((res) => {
-          this.getList();
-          this.$modal.msgSuccess("撤销成功");
-        })
-          .catch(() => {
-            this.$modal.msgSuccess("撤销失败");
-          });
-      })
-    },
   },
 };
 </script>
-  
+    

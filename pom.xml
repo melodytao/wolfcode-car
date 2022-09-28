@@ -195,10 +195,8 @@
         <module>wolfcode-quartz</module>
         <module>wolfcode-generator</module>
         <module>wolfcode-car-common</module>
-        <module>wolfcode-car-appointment</module>
         <module>wolfcode-car-front</module>
-        <module>wolfcode-car-audit</module>
-        <module>wolfcode-car-flowdefinition</module>
+        <module>wolfcode-car-business</module>
     </modules>
     <packaging>pom</packaging>
 
