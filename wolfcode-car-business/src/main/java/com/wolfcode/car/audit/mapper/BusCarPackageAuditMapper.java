@@ -69,6 +69,11 @@ public interface BusCarPackageAuditMapper
     public List<BusCarPackageAudit> selectBusCarPackageAuditListByBusinessKeys(
             @Param("businessKeyList") List<String> businessKeyList);
 
+    /**
+     * 通过业务key查询已办理套餐审核列表
+     * @param businessKeyList
+     * @return
+     */
     public List<BusCarPackageAudit> selectDoneAuditListByBusinessKeys(
             @Param("businessKeyList") List<String> businessKeyList);
 }

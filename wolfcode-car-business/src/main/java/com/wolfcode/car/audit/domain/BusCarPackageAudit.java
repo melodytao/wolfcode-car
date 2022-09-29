@@ -28,7 +28,7 @@ public class BusCarPackageAudit implements Serializable
     @Excel(name = "服务单项id")
     private Long serviceItemId;
 
-    /** $column.columnComment */
+    /** 服务单项名称 */
     @Excel(name = "服务单项名称")
     private String serviceItemName;
 

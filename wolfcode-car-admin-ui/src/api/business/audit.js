@@ -85,3 +85,10 @@ export function listDone(params) {
     params
   })
 }
+// 撤销套餐审核
+export function cancelCarPackageAudit(id){
+  return request({
+    url: '/business/audit/cancel/'+id,
+    method: 'put'
+  })
+}

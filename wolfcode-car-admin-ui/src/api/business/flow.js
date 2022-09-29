@@ -21,7 +21,7 @@ export function deployBpmnInfo(data){
     }
   )
 }
-// 撤销审核
+// 撤销部署
 export function removeBpmnInfo(id){
   return request({
     url:'/business/flow/'+id,

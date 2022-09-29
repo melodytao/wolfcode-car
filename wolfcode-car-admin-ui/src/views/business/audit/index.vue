@@ -94,7 +94,6 @@
             v-hasPermi="['business:carPackageAudit:processImg']"
             >进度查看</el-button
           >
-
           <el-button
             size="mini"
             type="text"
@@ -118,7 +117,7 @@
     <el-dialog
       title="审批历史"
       :visible.sync="historyDialog.open"
-      width="800px"
+      width="1200px"
       append-to-body
     >
       <el-table
@@ -126,13 +125,13 @@
         v-loading="historyDialog.loading"
         :data="historyDialog.list"
       >
-        <el-table-column label="任务名称" align="center" prop="taskName" />
+        <el-table-column label="任务名称" align="center" prop="taskName"  width="180"/>
         <el-table-column label="开始时间" align="center" prop="startTime" />
         <el-table-column
           label="结束时间"
           align="center"
           prop="endTime"
-          width="130"
+          width="180"
           :show-overflow-tooltip="true"
         />
         <el-table-column
@@ -373,9 +372,7 @@ export default {
         cancelCarPackageAudit(id).then((res) => {
           this.getList();
           this.$modal.msgSuccess("撤销成功");
-        })
-          .catch(() => {
-            this.$modal.msgSuccess("撤销失败");
+        }).catch(() => {
           });
       })
     },

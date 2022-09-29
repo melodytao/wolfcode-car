@@ -11,6 +11,7 @@ import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.image.impl.DefaultProcessDiagramGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -100,6 +101,7 @@ public class BusBpmnInfoServiceImpl implements IBusBpmnInfoService
      * @return 结果
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int deleteBusBpmnInfoById(Long id)
     {
         BusBpmnInfo busBpmnInfo = selectBusBpmnInfoById(id);
@@ -114,7 +116,8 @@ public class BusBpmnInfoServiceImpl implements IBusBpmnInfoService
         ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
                 .processDefinitionKey(processDefinitionKey)
                 .processDefinitionVersion(version).singleResult();
-        repositoryService.deleteDeployment(processDefinition.getDeploymentId());
+        //级联删除（需要超级管理员权限）
+        repositoryService.deleteDeployment(processDefinition.getDeploymentId(),true);
         return result;
     }
     /**
@@ -159,6 +162,7 @@ public class BusBpmnInfoServiceImpl implements IBusBpmnInfoService
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deploy(MultipartFile file, String bpmnLabel, Integer bpmnType, String info) throws IOException {
         String originalFilename = file.getOriginalFilename();
         String extName=originalFilename.substring(originalFilename.indexOf(".")+1);

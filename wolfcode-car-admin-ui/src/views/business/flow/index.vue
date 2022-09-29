@@ -63,11 +63,14 @@
     </el-row>
 
     <el-table v-loading="loading" :data="infoList">
-      <el-table-column label="流程名称" align="center" prop="bpmnLabel" />
+      <el-table-column label="流程名称" align="center" prop="bpmnLabel" 
+      :show-overflow-tooltip="true"
+      />
       <el-table-column
         label="流程定义key"
         align="center"
         prop="processDefinitionKey"
+        :show-overflow-tooltip="true"
       />
       <el-table-column label="描述信息" align="center" prop="info" />
       <el-table-column label="版本号" align="center" prop="version" />
@@ -342,10 +345,7 @@ export default {
           //拼接表单数据
           let formData=new FormData();
           formData.append("file",this.fileList[0].raw);
-          let dictData=this.$store.getters.dict[0].value;
-          dictData.forEach((item) => {
-            formData.append("bpmnLabel",item.dictLabel);
-          });
+          formData.append("bpmnLabel",this.fileList[0].name);
           formData.append("bpmnType",this.form.bpmnType);
           formData.append("info",this.form.info);
           deployBpmnInfo(formData).then((res)=>{

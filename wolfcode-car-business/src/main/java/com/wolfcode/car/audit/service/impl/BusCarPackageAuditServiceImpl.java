@@ -12,6 +12,7 @@ import com.wolfcode.car.audit.mapper.BusCarPackageAuditMapper;
 import com.wolfcode.car.audit.service.IBusCarPackageAuditService;
 import com.wolfcode.car.common.core.domain.model.LoginUser;
 import com.wolfcode.car.common.utils.DateUtils;
+import com.wolfcode.car.common.utils.PageUtils;
 import com.wolfcode.car.common.utils.SecurityUtils;
 import com.wolfcode.car.flowdefinition.domain.BusBpmnInfo;
 import com.wolfcode.car.flowdefinition.service.IBusBpmnInfoService;
@@ -151,11 +152,9 @@ public class BusCarPackageAuditServiceImpl implements IBusCarPackageAuditService
         // 当前登录用户id
         //2 查询任务列表
         String userId = SecurityUtils.getUserId().toString();
-        int firstResult = (auditVo.getPageNum() - 1) * auditVo.getPageSize();
-        int maxResults = auditVo.getPageSize();
         List<Task> taskList = taskService.createTaskQuery()
                 .processDefinitionKey(busBpmnInfo.getProcessDefinitionKey())
-                .taskAssignee(userId).listPage(firstResult, maxResults);
+                .taskAssignee(userId).list();
         if (CollectionUtils.isEmpty(taskList)) {
             return Collections.emptyList();
         }
@@ -171,6 +170,7 @@ public class BusCarPackageAuditServiceImpl implements IBusCarPackageAuditService
                 processInstance.getBusinessKey()).collect(Collectors.toList());
 
         //4 通过businessKeys，查询套餐审核列表(审核中)
+        PageUtils.startPage();
         List<BusCarPackageAudit> busCarPackageAudits = busCarPackageAuditMapper.
                 selectBusCarPackageAuditListByBusinessKeys(businessKeys);
         return busCarPackageAudits;
@@ -295,6 +295,7 @@ public class BusCarPackageAuditServiceImpl implements IBusCarPackageAuditService
         if(CarPackageAuditEnum.AUDITING.getCode()==audit.getStatus()){
             ProcessInstance instance = runtimeService.createProcessInstanceQuery()
                     .processInstanceId(audit.getInstanceId()).singleResult();
+            Assert.notNull(instance,"查找不到相应的实例记录");
             processDefinitionKey=instance.getProcessDefinitionKey();
             highLightedActivities = runtimeService.getActiveActivityIds(audit.getInstanceId());
         }else{
@@ -337,11 +338,9 @@ public class BusCarPackageAuditServiceImpl implements IBusCarPackageAuditService
         // 当前登录用户id
         //2 查询历史列表
         String userId = SecurityUtils.getUserId().toString();
-        int firstResult = (auditVo.getPageNum() - 1) * auditVo.getPageSize();
-        int maxResults = auditVo.getPageSize();
         List<HistoricTaskInstance> taskList = historyService.createHistoricTaskInstanceQuery().
                 processDefinitionKey(busBpmnInfo.getProcessDefinitionKey()).
-                finished().taskAssignee(userId).listPage(firstResult, maxResults);
+                finished().taskAssignee(userId).list();
         if (CollectionUtils.isEmpty(taskList)) {
             return Collections.emptyList();
         }
@@ -353,6 +352,8 @@ public class BusCarPackageAuditServiceImpl implements IBusCarPackageAuditService
         List<String> businessKeys = processInstances.stream().map((processInstance) ->
                 processInstance.getBusinessKey()).collect(Collectors.toList());
         //4 通过businessKeys，查询套餐审核列表(不是审核中)
+        //开启分页
+        PageUtils.startPage();
         return busCarPackageAuditMapper.selectDoneAuditListByBusinessKeys(businessKeys);
     }
 
@@ -369,8 +370,11 @@ public class BusCarPackageAuditServiceImpl implements IBusCarPackageAuditService
         // 2 审核中的才允许撤销
         Assert.state(CarPackageAuditEnum.AUDITING.getCode() == busCarPackageAudit.getStatus(),
                 "审核中的才允许撤销");
+
         // 3 删除流程实例
-            runtimeService.deleteProcessInstance(busCarPackageAudit.getInstanceId(),"流程撤销");
+        ProcessInstance instance = runtimeService.createProcessInstanceQuery().processInstanceId(busCarPackageAudit.getInstanceId()).singleResult();
+        Assert.notNull(instance,"找不到流程实例");
+        runtimeService.deleteProcessInstance(busCarPackageAudit.getInstanceId(),"流程撤销");
         // 4 更改状态
           // 审核套餐更改为撤销状态
         BusCarPackageAudit audit = new BusCarPackageAudit();
