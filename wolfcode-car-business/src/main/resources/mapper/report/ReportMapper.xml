@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wolfcode.car.report.mapper.ReportMappper">
+    <sql id="dateTime">
+        <where>
+            <if test="shopIncomeVo.params.beginTime != null and shopIncomeVo.params.beginTime != ''"><!-- 开始时间检索 -->
+                and date_format(pay_time,'%y%m%d') &gt;= date_format(#{shopIncomeVo.params.beginTime},'%y%m%d')
+            </if>
+            <if test="shopIncomeVo.params.endTime != null and shopIncomeVo.params.endTime != ''"><!-- 结束时间检索 -->
+                and date_format(pay_time,'%y%m%d') &lt;= date_format(#{shopIncomeVo.params.endTime},'%y%m%d')
+            </if>
+        </where>
+    </sql>
+
+    <sql id="orderTimeConsumption">
+        <where>
+            <if test="consumptionVo.params.beginTime != null and consumptionVo.params.beginTime != ''"><!-- 开始时间检索 -->
+                and date_format(pay_time,'%y%m%d') &gt;= date_format(#{consumptionVo.params.beginTime},'%y%m%d')
+            </if>
+            <if test="consumptionVo.params.endTime != null and consumptionVo.params.endTime != ''"><!-- 结束时间检索 -->
+                and date_format(pay_time,'%y%m%d') &lt;= date_format(#{consumptionVo.params.endTime},'%y%m%d')
+            </if>
+        </where>
+    </sql>
+
+    <sql id="appointTimeConsumption">
+        <where>
+            <if test="consumptionVo.params.beginTime != null and consumptionVo.params.beginTime != ''"><!-- 开始时间检索 -->
+                and date_format(appointment_time,'%y%m%d') &gt;= date_format(#{consumptionVo.params.beginTime},'%y%m%d')
+            </if>
+            <if test="consumptionVo.params.endTime != null and consumptionVo.params.endTime != ''"><!-- 结束时间检索 -->
+                and date_format(appointment_time,'%y%m%d') &lt;= date_format(#{consumptionVo.params.endTime},'%y%m%d')
+            </if>
+        </where>
+    </sql>
+
+    <sql id="customerDateTime">
+        <where>
+            <if test="customerVo.params.beginTime != null and customerVo.params.beginTime != ''"><!-- 开始时间检索 -->
+                and date_format(pay_time,'%y%m%d') &gt;= date_format(#{customerVo.params.beginTime},'%y%m%d')
+            </if>
+            <if test="customerVo.params.endTime != null and customerVo.params.endTime != ''"><!-- 结束时间检索 -->
+                and date_format(pay_time,'%y%m%d') &lt;= date_format(#{customerVo.params.endTime},'%y%m%d')
+            </if>
+        </where>
+    </sql>
+    <select id="statisticShopIncome"
+            resultType="com.wolfcode.car.report.domain.info.StatisticalShopIncomeInfo">
+        <choose>
+            <!--按天分组-->
+            <when test="shopIncomeVo.dateStatus==0">
+                select IFNULL(DATE_FORMAT(pay_time,'%Y年%m月%d日'),'没有支付时间') as statisticalDate,
+                SUM(total_amount-discount_amount) as statisticalAmount from bus_statement
+                <include refid="dateTime"></include>
+                group by statisticalDate order by statisticalDate desc
+            </when>
+            <!--按周分组-->
+            <when test="shopIncomeVo.dateStatus==1">
+                select SUM(total_amount-discount_amount) as statisticalAmount,
+                IFNULL(CONCAT(DATE_FORMAT(pay_time,'%Y年'),'第',
+                WEEK(DATE_FORMAT(pay_time,'%Y-%m-%d')),'周'),'没有支付时间') as statisticalDate
+                FROM bus_statement
+                <include refid="dateTime"></include>
+                GROUP BY statisticalDate
+                ORDER BY statisticalDate DESC
+            </when>
+            <!--按月分组-->
+            <when test="shopIncomeVo.dateStatus==2">
+                select IFNULL(DATE_FORMAT(pay_time,'%Y年%m月'),'没有支付时间') as statisticalDate,
+                SUM(total_amount-discount_amount) as statisticalAmount from bus_statement
+                <include refid="dateTime"></include>
+                group by statisticalDate order by statisticalDate desc
+            </when>
+            <!--按年分组-->
+            <when test="shopIncomeVo.dateStatus==3">
+                select IFNULL(DATE_FORMAT(pay_time,'%Y年'),'没有支付时间') as statisticalDate,
+                SUM(total_amount-discount_amount) as statisticalAmount from bus_statement
+                <include refid="dateTime"></include>
+                group by statisticalDate order by statisticalDate desc
+            </when>
+        </choose>
+
+
+    </select>
+    <select id="statisticConsumption"
+            resultType="com.wolfcode.car.report.domain.info.StatisticalConsumptionInfo">
+
+        <choose>
+            <!--结算单-->
+            <when test="consumptionVo.serviceStatus==0">
+                <choose>
+                    <!--按天分组-->
+                    <when test="consumptionVo.dateStatus==0">
+                        select IFNULL(DATE_FORMAT(pay_time,'%Y年%m月%d日') ,'没有支付时间')as statisticalDate,
+                        count(*) as orderCount from bus_statement
+                        <include refid="orderTimeConsumption"></include>
+                        group by statisticalDate order by statisticalDate desc
+                    </when>
+                    <!--按周分组-->
+                    <when test="consumptionVo.dateStatus==1">
+                        select IFNULL(CONCAT(DATE_FORMAT(pay_time,'%Y年'),'第',
+                        WEEK(DATE_FORMAT(pay_time,'%Y-%m-%d')),'周'),'没有支付时间') as statisticalDate,
+                        count(*) as orderCount
+                        FROM bus_statement
+                        <include refid="orderTimeConsumption"></include>
+                        GROUP BY statisticalDate
+                        ORDER BY statisticalDate DESC
+                    </when>
+                    <!--按月分组-->
+                    <when test="consumptionVo.dateStatus==2">
+                        select IFNULL(DATE_FORMAT(pay_time,'%Y年%m月'),'没有支付时间') as statisticalDate,
+                        count(*) as orderCount from bus_statement
+                        <include refid="orderTimeConsumption"></include>
+                        group by statisticalDate order by statisticalDate desc
+                    </when>
+                    <!--按年分组-->
+                    <when test="consumptionVo.dateStatus==3">
+                        select IFNULL(DATE_FORMAT(pay_time,'%Y年'),'没有支付时间') as statisticalDate,
+                        count(*) as orderCount from bus_statement
+                        <include refid="orderTimeConsumption"></include>
+                        group by statisticalDate order by statisticalDate desc
+                    </when>
+                </choose>
+            </when>
+            <!--预约单-->
+            <when test="consumptionVo.serviceStatus==1">
+                <choose>
+                    <!--按天分组-->
+                    <when test="consumptionVo.dateStatus==0">
+                        select IFNULL(DATE_FORMAT(appointment_time,'%Y年%m月%d日') ,'没有支付时间')as statisticalDate,
+                        count(*) as orderCount from bus_appointment
+                        <include refid="appointTimeConsumption"></include>
+                        group by statisticalDate order by statisticalDate desc
+                    </when>
+                    <!--按周分组-->
+                    <when test="consumptionVo.dateStatus==1">
+                        select IFNULL(CONCAT(DATE_FORMAT(appointment_time,'%Y年'),'第',
+                        WEEK(DATE_FORMAT(pay_time,'%Y-%m-%d')),'周'),'没有支付时间') as statisticalDate,
+                        count(*) as orderCount
+                        FROM bus_appointment
+                        <include refid="appointTimeConsumption"></include>
+                        GROUP BY statisticalDate
+                        ORDER BY statisticalDate DESC
+                    </when>
+                    <!--按月分组-->
+                    <when test="consumptionVo.dateStatus==2">
+                        select IFNULL(DATE_FORMAT(appointment_time,'%Y年%m月'),'没有支付时间') as statisticalDate,
+                        count(*) as orderCount from bus_appointment
+                        <include refid="appointTimeConsumption"></include>
+                        group by statisticalDate order by statisticalDate desc
+                    </when>
+                    <!--按年分组-->
+                    <when test="consumptionVo.dateStatus==3">
+                        select IFNULL(DATE_FORMAT(appointment_time,'%Y年'),'没有支付时间') as statisticalDate,
+                        count(*) as orderCount from bus_appointment
+                        <include refid="appointTimeConsumption"></include>
+                        group by statisticalDate order by statisticalDate desc
+                    </when>
+                </choose>
+            </when>
+
+        </choose>
+    </select>
+    <select id="statisticCustomer" resultType="com.wolfcode.car.report.domain.info.StatisticalCustomerInfo">
+        SELECT customer_phone as customerPhone, SUM(total_amount-discount_amount) as statisticalAmount FROM
+        bus_statement
+        <where>
+            <if test="customerVo.customerName!=null">
+                customer_name=#{customerVo.customerName}
+            </if>
+            <if test="customerVo.customerPhone!=null">
+                and
+                customer_phone=#{customerVo.customerPhone}
+            </if>
+            <if test="customerVo.params.beginTime != null and customerVo.params.beginTime != ''"><!-- 开始时间检索 -->
+                and date_format(pay_time,'%y%m%d') &gt;= date_format(#{customerVo.params.beginTime},'%y%m%d')
+            </if>
+            <if test="customerVo.params.endTime != null and customerVo.params.endTime != ''"><!-- 结束时间检索 -->
+                and date_format(pay_time,'%y%m%d') &lt;= date_format(#{customerVo.params.endTime},'%y%m%d')
+            </if>
+        </where>
+        GROUP BY customer_phone
+        ORDER BY statisticalAmount  asc
+    </select>
+</mapper>
