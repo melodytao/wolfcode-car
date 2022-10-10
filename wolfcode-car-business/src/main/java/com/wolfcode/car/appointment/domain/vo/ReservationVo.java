@@ -22,7 +22,7 @@ public class ReservationVo {
     /** 汽车类型 */
     private String carSeries;
     /** 服务类型【维修0/保养1】 */
-    private Integer serviceType;
+    private Long serviceType;
     /** 创建时间 */
     private Date createTime;
     /** 备注信息 */
