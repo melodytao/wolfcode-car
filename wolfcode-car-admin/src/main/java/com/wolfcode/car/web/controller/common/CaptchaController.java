@@ -22,12 +22,13 @@ import com.wolfcode.car.common.utils.sign.Base64;
 import com.wolfcode.car.common.utils.uuid.IdUtils;
 
 /**
+ * REST控制器，用于生成验证码功能
+ *
+ *
  * 验证码操作处理
- * 
- * @author ruoyi
  */
 @RestController
-public class CaptchaController
+public class CaptchaController//包含处理验证码相关的业务逻辑
 {
     @Resource(name = "captchaProducer")
     private Producer captchaProducer;
@@ -36,10 +37,12 @@ public class CaptchaController
     private Producer captchaProducerMath;
 
     @Autowired
-    private RedisCache redisCache;
+    private RedisCache redisCache;//redis缓存
     
     @Autowired
-    private ISysConfigService configService;
+    private ISysConfigService configService;//系统配置信息服务
+
+
     /**
      * 生成验证码
      */
@@ -47,7 +50,10 @@ public class CaptchaController
     public AjaxResult getCode(HttpServletResponse response) throws IOException
     {
         AjaxResult ajax = AjaxResult.success();
+
+        //调用configService服务来检查验证码功能是否启用
         boolean captchaEnabled = configService.selectCaptchaEnabled();
+
         ajax.put("captchaEnabled", captchaEnabled);
         if (!captchaEnabled)
         {
